@@ -86,7 +86,7 @@ WSGI_APPLICATION = 'ApiRestLentes.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.path.join(BASE_DIR, 'lentes_bd.sqlite3'),
     }
 }
 
@@ -109,6 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'lentes.Usuario'
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/

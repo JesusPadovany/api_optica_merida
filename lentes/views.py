@@ -4,8 +4,8 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
  
-from lentes.models import Lente, TipoLente, Marca
-from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer
+from lentes.models import Lente, TipoLente, Marca, Usuario
+from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer
 from rest_framework.decorators import api_view
 
 
@@ -175,6 +175,63 @@ def marcas_detail(request, pk):
 
     except Marca.DoesNotExist: 
         return JsonResponse({'message': 'No existe el tipo de lente solicitado'}, status=status.HTTP_404_NOT_FOUND) 
+ 
+    
+    # GET / PUT / DELETE marcas
+
+      
+@api_view(['GET', 'POST', 'DELETE'])
+def usuarios_list(request):
+    # GET list of usuarios, POST a new usuarios, DELETE all usuarios
+    if request.method == 'GET':
+        usuarios = Usuario.objects.all()
+        
+        # descripcion = request.GET.get('descripcion', None)
+        # if descripcion is not None:
+        #     usuarios = usuarios.filter(descripcion__icontains=descripcion)
+        
+        usuarios_serializer = UsuarioSerializer(usuarios, many=True)
+        return JsonResponse(usuarios_serializer.data, safe=False)
+        # 'safe=False' for objects serialization
+
+    elif request.method == 'POST':
+        usuario = JSONParser().parse(request)
+        usuario_serializer = UsuarioSerializer(data=usuario)
+        if usuario_serializer.is_valid():
+            usuario_serializer.save()
+            return JsonResponse(usuario_serializer.data, status=status.HTTP_201_CREATED) 
+        return JsonResponse(usuario_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        count = Usuario.objects.all().delete()
+        return JsonResponse({'message': '{} Usuarios eliminado satisfactoriamente!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+ 
+ 
+@api_view(['GET', 'PUT', 'DELETE'])
+def usuarios_detail(request, pk):
+    # find lente by pk (id)
+    try: 
+        usuario = Usuario.objects.get(pk=pk) 
+        
+        if request.method == 'GET': 
+            usuario_serializer = TutorialSerializer(usuario) 
+            return JsonResponse(usuario_serializer.data) 
+
+        elif request.method == 'PUT': 
+            usuario_data = JSONParser().parse(request) 
+            usuario_serializer = TutorialSerializer(usuario, data=usuario_data) 
+            if usuario_serializer.is_valid(): 
+                usuario_serializer.save() 
+                return JsonResponse(usuario_serializer.data) 
+            return JsonResponse(usuario_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+        elif request.method == 'DELETE': 
+            usuario.delete() 
+            return JsonResponse({'message': 'Usuario eliminado de manera satisfactoria!'}, status=status.HTTP_204_NO_CONTENT)
+
+    except Marca.DoesNotExist: 
+        return JsonResponse({'message': 'No existe el usuario solicitado'}, status=status.HTTP_404_NOT_FOUND) 
  
     
     # GET / PUT / DELETE marcas

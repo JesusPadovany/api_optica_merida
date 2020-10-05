@@ -10,4 +10,7 @@ urlpatterns = [
 
     url(r'^api/marcas$', views.marcas_list),
     url(r'^api/marcas/(?P<pk>[0-9]+)$', views.marcas_detail),
+
+    url(r'^api/usuarios$', views.usuarios_list),
+    url(r'^api/usuarios/(?P<pk>[0-9]+)$', views.usuarios_detail),
 ]

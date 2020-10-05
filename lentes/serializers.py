@@ -1,5 +1,5 @@
 from rest_framework import serializers 
-from lentes.models import Marca, TipoLente, Lente, Compra
+from lentes.models import Marca, TipoLente, Lente, Compra, Usuario
  
  
 class TipoLenteSerializer(serializers.ModelSerializer):
@@ -36,4 +36,13 @@ class CompraSerializer(serializers.ModelSerializer):
         fields = ('id',
                   'idinventario',
                   'cantidad',
+                  'fecha_compra')
+
+class UsuarioSerializer(serializers.ModelSerializer):
+ 
+    class Meta:
+        model = Usuario
+        fields = ('id',
+                  'username',
+                  'email',
                   'fecha_compra')
