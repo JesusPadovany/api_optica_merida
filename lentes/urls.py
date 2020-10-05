@@ -2,7 +2,6 @@ from django.conf.urls import url
 from django.urls import include, path
 
 from rest_framework.routers import DefaultRouter
-
 from lentes import views 
 
 
@@ -23,7 +22,5 @@ urlpatterns = [
 
     url(r'^api/usuarios$', views.usuarios_list),
     url(r'^api/usuarios/(?P<pk>[0-9]+)$', views.usuarios_detail),
-
-    path('', include(router.urls))
 
 ]

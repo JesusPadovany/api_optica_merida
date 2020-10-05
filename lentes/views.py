@@ -4,9 +4,13 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 # Django REST Framework
 from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes, authentication_classes
+from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
- 
+from rest_framework import authentication, permissions
+
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+
 from lentes.models import Lente, TipoLente, Marca, Usuario
 from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer, UsuarioLoginSerializer, UsuarioSignUpSerializer
 
@@ -38,6 +42,7 @@ class UsuarioViewSet(viewsets.GenericViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET', 'POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
 def lentes_list(request):
     # GET list of lentes, POST a new lentes, DELETE all lentes
     if request.method == 'GET':
@@ -209,6 +214,8 @@ def marcas_detail(request, pk):
 
       
 @api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def usuarios_list(request):
     # GET list of usuarios, POST a new usuarios, DELETE all usuarios
     if request.method == 'GET':
