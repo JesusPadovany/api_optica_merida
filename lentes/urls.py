@@ -1,7 +1,17 @@
-from django.conf.urls import url 
+from django.conf.urls import url
+from django.urls import include, path
+
+from rest_framework.routers import DefaultRouter
+
 from lentes import views 
+
+
+
+router = DefaultRouter()
+router.register(r'lentes', views.UsuarioViewSet, basename='lentes')
  
 urlpatterns = [ 
+    path('', include(router.urls)),
     url(r'^api/lentes$', views.lentes_list),
     url(r'^api/lentes/(?P<pk>[0-9]+)$', views.lentes_detail),
 
@@ -13,4 +23,7 @@ urlpatterns = [
 
     url(r'^api/usuarios$', views.usuarios_list),
     url(r'^api/usuarios/(?P<pk>[0-9]+)$', views.usuarios_detail),
+
+    path('', include(router.urls))
+
 ]

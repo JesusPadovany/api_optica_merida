@@ -2,12 +2,40 @@ from django.shortcuts import render
 
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
-from rest_framework import status
+# Django REST Framework
+from rest_framework import status, viewsets
+from rest_framework.decorators import action, api_view
+from rest_framework.response import Response
  
 from lentes.models import Lente, TipoLente, Marca, Usuario
-from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer
-from rest_framework.decorators import api_view
+from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer, UsuarioLoginSerializer, UsuarioSignUpSerializer
 
+class UsuarioViewSet(viewsets.GenericViewSet):
+
+    queryset = Usuario.objects.filter(is_active=True)
+    serializer_class = UsuarioSerializer
+
+    # Detail define si es una petición de detalle o no, en methods añadimos el método permitido, en nuestro caso solo vamos a permitir post
+    @action(detail=False, methods=['post'])
+    def login(self, request):
+        """Usuario sign in."""
+        serializer = UsuarioLoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user, token = serializer.save()
+        data = {
+            'user': UsuarioSerializer(user).data,
+            'access_token': token
+        }
+        return Response(data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=['post'])
+    def signup(self, request):
+        """User sign up."""
+        serializer = UsuarioSignUpSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        data = UsuarioSerializer(user).data
+        return Response(data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET', 'POST', 'DELETE'])
 def lentes_list(request):

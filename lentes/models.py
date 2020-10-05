@@ -5,7 +5,7 @@ DATE_INPUT_FORMATS = ['%d-%m-%Y']
 
 # Create your models here.
 
-class UsuarioManager(BaseException):
+class UserManager(BaseUserManager):
     def create_user(self, email, username, nombres, apellidos, telefono, direccion, numero_tarjeta, password = None):
         if not email:
             raise ValueError('El usuariodebe tener un correo electronico')
@@ -22,7 +22,7 @@ class UsuarioManager(BaseException):
         usuario.save()
         return Usuario
         
-    def create_user(self, email, username, nombres, apellidos, telefono, direccion, numero_tarjeta, password):
+    def create_superuser(self, email, username, nombres, apellidos, telefono, direccion, numero_tarjeta, password):
         usuario = self.create_user(
             email,
             username = username,
@@ -45,9 +45,11 @@ class Usuario(AbstractBaseUser):
     apellidos = models.CharField(max_length = 75)
     is_admin =  models.BooleanField(default = False)
     is_active = models.BooleanField(default = True)
+
+    objects = UserManager()
+
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'nombres', 'apellidos']
-    objects = UsuarioManager()
 
     @staticmethod
     def has_perm(perm, obj=None):

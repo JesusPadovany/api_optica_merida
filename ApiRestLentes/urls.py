@@ -21,7 +21,13 @@ Including another URLconf
     # ]
 
 from django.conf.urls import url, include 
+
+from django.conf import settings
+from django.urls import include, path
+from django.conf.urls.static import static
+from django.contrib import admin
  
 urlpatterns = [ 
+    path('', include(('lentes.urls', 'lentes'), namespace='lentes')),
     url(r'^', include('lentes.urls')),
 ]
