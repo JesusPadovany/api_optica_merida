@@ -8,11 +8,11 @@ from rest_framework.decorators import action, api_view, permission_classes, auth
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.response import Response
 from rest_framework import authentication, permissions
-
+from django.db.models import F
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
-from lentes.models import Lente, TipoLente, Marca, Usuario
-from lentes.serializers import LenteSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer, UsuarioLoginSerializer, UsuarioSignUpSerializer
+from lentes.models import Lente, TipoLente, Marca, Usuario, Compra
+from lentes.serializers import LenteSerializer, LentePostSerializer, MarcaSerializer, TipoLenteSerializer, UsuarioSerializer, UsuarioLoginSerializer, UsuarioSignUpSerializer, CompraSerializer
 
 class UsuarioViewSet(viewsets.GenericViewSet):
 
@@ -42,23 +42,25 @@ class UsuarioViewSet(viewsets.GenericViewSet):
         return Response(data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET', 'POST', 'DELETE'])
-@permission_classes([IsAuthenticated])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def lentes_list(request):
     # GET list of lentes, POST a new lentes, DELETE all lentes
     if request.method == 'GET':
         lentes = Lente.objects.all()
         
-        # descripcion = request.GET.get('descripcion', None)
-        # if descripcion is not None:
-        #     lentes = lentes.filter(descripcion__icontains=descripcion)
-        
+        marca = request.GET.get('marca', None)
+        lentes = lentes.filter(cantidad_total__gte = 0)
+        if marca is not None:
+            lentes = lentes.filter(marca__icontains=marca)
+        lentes.values('marca', 'tipo_lente')
         lentes_serializer = LenteSerializer(lentes, many=True)
         return JsonResponse(lentes_serializer.data, safe=False)
         # 'safe=False' for objects serialization
 
     elif request.method == 'POST':
         lente_data = JSONParser().parse(request)
-        lente_serializer = LenteSerializer(data=lente_data)
+        lente_serializer = LentePostSerializer(data=lente_data)
         if lente_serializer.is_valid():
             lente_serializer.save()
             return JsonResponse(lente_serializer.data, status=status.HTTP_201_CREATED) 
@@ -77,12 +79,12 @@ def lentes_detail(request, pk):
         lente = Lente.objects.get(pk=pk) 
         
         if request.method == 'GET': 
-            lente_serializer = TutorialSerializer(lente) 
+            lente_serializer = LenteSerializer(lente) 
             return JsonResponse(lente_serializer.data) 
 
         elif request.method == 'PUT': 
             lente_data = JSONParser().parse(request) 
-            lente_serializer = TutorialSerializer(lente, data=lente_data) 
+            lente_serializer = LentePostSerializer(lente, data=lente_data) 
             if lente_serializer.is_valid(): 
                 lente_serializer.save() 
                 return JsonResponse(lente_serializer.data) 
@@ -134,12 +136,12 @@ def lente_tipos_detail(request, pk):
         lente_tipo = TipoLente.objects.get(pk=pk) 
         
         if request.method == 'GET': 
-            lente_tipo_serializer = TutorialSerializer(lente_tipo) 
+            lente_tipo_serializer = TipoLenteSerializer(lente_tipo) 
             return JsonResponse(lente_tipo_serializer.data) 
 
         elif request.method == 'PUT': 
             lente_tipo_data = JSONParser().parse(request) 
-            lente_tipo_serializer = TutorialSerializer(lente_tipo, data=lente_tipo_data) 
+            lente_tipo_serializer = TipoLenteSerializer(lente_tipo, data=lente_tipo_data) 
             if lente_tipo_serializer.is_valid(): 
                 lente_tipo_serializer.save() 
                 return JsonResponse(lente_tipo_serializer.data) 
@@ -191,12 +193,12 @@ def marcas_detail(request, pk):
         marca = Marca.objects.get(pk=pk) 
         
         if request.method == 'GET': 
-            marca_serializer = TutorialSerializer(marca) 
+            marca_serializer = MarcaSerializer(marca) 
             return JsonResponse(marca_serializer.data) 
 
         elif request.method == 'PUT': 
             marca_data = JSONParser().parse(request) 
-            marca_serializer = TutorialSerializer(marca, data=marca_data) 
+            marca_serializer = MarcaSerializer(marca, data=marca_data) 
             if marca_serializer.is_valid(): 
                 marca_serializer.save() 
                 return JsonResponse(marca_serializer.data) 
@@ -250,12 +252,12 @@ def usuarios_detail(request, pk):
         usuario = Usuario.objects.get(pk=pk) 
         
         if request.method == 'GET': 
-            usuario_serializer = TutorialSerializer(usuario) 
+            usuario_serializer = UsuarioSerializer(usuario) 
             return JsonResponse(usuario_serializer.data) 
 
         elif request.method == 'PUT': 
             usuario_data = JSONParser().parse(request) 
-            usuario_serializer = TutorialSerializer(usuario, data=usuario_data) 
+            usuario_serializer = UsuarioSerializer(usuario, data=usuario_data) 
             if usuario_serializer.is_valid(): 
                 usuario_serializer.save() 
                 return JsonResponse(usuario_serializer.data) 
@@ -265,8 +267,75 @@ def usuarios_detail(request, pk):
             usuario.delete() 
             return JsonResponse({'message': 'Usuario eliminado de manera satisfactoria!'}, status=status.HTTP_204_NO_CONTENT)
 
-    except Marca.DoesNotExist: 
+    except Usuario.DoesNotExist: 
         return JsonResponse({'message': 'No existe el usuario solicitado'}, status=status.HTTP_404_NOT_FOUND) 
+ 
+    
+# GET / PUT / DELETE marcas
+@api_view(['GET', 'POST', 'DELETE'])
+def compras_list(request):
+    # GET list of compras, POST a new compras, DELETE all compras
+    if request.method == 'GET':
+        compras = Compra.objects.all()
+        
+        # descripcion = request.GET.get('descripcion', None)
+        # if descripcion is not None:
+        #     compras = compras.filter(descripcion__icontains=descripcion)
+        
+        compras_serializer = CompraSerializer(compras, many=True)
+        return JsonResponse(compras_serializer.data, safe=False)
+        # 'safe=False' for objects serialization
+
+    elif request.method == 'POST':
+        compra = JSONParser().parse(request)
+        id_iventario = compra['inventario'] 
+        compra_serializer = CompraSerializer(data=compra)
+        print(compra_serializer)
+        if compra_serializer.is_valid(): 
+                inventario = Lente.objects.get(pk=id_iventario)
+                inventario_serializer = LenteSerializer(data=inventario)
+                print(inventario)
+                print(inventario_serializer)
+                if inventario.cantidad_total >= compra['cantidad']:
+                    inventario.cantidad_total = inventario.cantidad_total - compra['cantidad']
+                    #inventario_serializer.save(inventario.cantidad_total - compra['cantidad'])
+                    inventario.save() 
+                    compra_serializer.save() 
+
+            # compra_serializer.save()
+                return JsonResponse(compra_serializer.data, status=status.HTTP_201_CREATED) 
+        return JsonResponse(compra_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    elif request.method == 'DELETE':
+        count = Compra.objects.all().delete()
+        return JsonResponse({'message': '{} Compras eliminado satisfactoriamente!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+    
+ 
+ 
+@api_view(['GET', 'PUT', 'DELETE'])
+def compras_detail(request, pk):
+    # find lente by pk (id)
+    try: 
+        compra = Compra.objects.get(pk=pk) 
+        
+        if request.method == 'GET': 
+            compra_serializer = CompraSerializer(compra) 
+            return JsonResponse(compra_serializer.data) 
+
+        elif request.method == 'PUT': 
+            compra_data = JSONParser().parse(request) 
+            compra_serializer = CompraSerializer(compra, data=compra_data) 
+            if compra_serializer.is_valid(): 
+                compra_serializer.save() 
+                return JsonResponse(compra_serializer.data) 
+            return JsonResponse(compra_serializer.errors, status=status.HTTP_400_BAD_REQUEST) 
+
+        elif request.method == 'DELETE': 
+            compra.delete() 
+            return JsonResponse({'message': 'Compra eliminado de manera satisfactoria!'}, status=status.HTTP_204_NO_CONTENT)
+
+    except Compra.DoesNotExist: 
+        return JsonResponse({'message': 'No existe el compra solicitado'}, status=status.HTTP_404_NOT_FOUND) 
  
     
     # GET / PUT / DELETE marcas

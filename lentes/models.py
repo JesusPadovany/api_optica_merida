@@ -77,12 +77,13 @@ class Marca(models.Model):
     nombre_marca = models.CharField(max_length = 255)
 
 class Lente(models.Model):
-    idtipo_lente = models.ForeignKey(TipoLente, on_delete=models.CASCADE)
-    idmarcas = models.ForeignKey(Marca, on_delete=models.CASCADE)
+    tipo_lente = models.ForeignKey(TipoLente, on_delete=models.CASCADE)
+    marca = models.ForeignKey(Marca, on_delete=models.CASCADE)
     cantidad_total = models.IntegerField()
     descripcion = models.CharField(max_length = 255)
     codigo = models.CharField(max_length = 255)
     foto = models.CharField(max_length = 255)
+    #foto = models.ImageField(upload_to='lentes')
     precio = models.FloatField()
 
 # class Carrito(models.Model):
@@ -90,7 +91,7 @@ class Lente(models.Model):
 #     idlente,
 
 class Compra(models.Model):
-    #idusuario = models.ForeignKey(User, on_delete=models.CASCADE)
-    idinventario = models.ForeignKey(Lente, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    inventario = models.ForeignKey(Lente, on_delete=models.CASCADE)
     cantidad = models.IntegerField()
     fecha_compra = models.DateField()

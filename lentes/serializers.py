@@ -14,47 +14,43 @@ class TipoLenteSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = TipoLente
-        fields = ('id',
-                  'tipo_lente')
+        fields = '__all__' 
 
 class MarcaSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = Marca
-        fields = ('id',
-                  'nombre_marca')
+        fields = '__all__' 
 
 class LenteSerializer(serializers.ModelSerializer):
- 
+    
+    marca = MarcaSerializer(many = False)   
+    tipo_lente = TipoLenteSerializer(many = False)   
     class Meta:
         model = Lente
-        fields = ('id',
-                  'idtipo_lente',
-                  'idmarcas',
-                  'cantidad_total',
-                  'descripcion',
-                  'codigo',
-                  'foto',
-                  'precio')
+        fields = '__all__' 
+        #read_only_fields = ('id', 'marca', 'tipo_lente')
+
+
+class LentePostSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = Lente
+        fields = '__all__' 
+        #read_only_fields = ('id', 'marca', 'tipo_lente')
+
 
 class CompraSerializer(serializers.ModelSerializer):
- 
     class Meta:
         model = Compra
-        fields = ('id',
-                  'idinventario',
-                  'cantidad',
-                  'fecha_compra')
+        fields = '__all__' 
+
 
 class UsuarioSerializer(serializers.ModelSerializer):
  
     class Meta:
         model = Usuario
-        fields = ('id',
-                  'username',
-                  'nombres',
-                  'apellidos',
-                  'email')
+        fields = '__all__' 
 
 class UsuarioLoginSerializer(serializers.ModelSerializer):
 # Campos que vamos a requerir

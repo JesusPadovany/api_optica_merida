@@ -7,7 +7,7 @@ from lentes import views
 
 
 router = DefaultRouter()
-router.register(r'lentes', views.UsuarioViewSet, basename='lentes')
+router.register(r'users', views.UsuarioViewSet, basename='users')
  
 urlpatterns = [ 
     path('', include(router.urls)),
@@ -22,5 +22,8 @@ urlpatterns = [
 
     url(r'^api/usuarios$', views.usuarios_list),
     url(r'^api/usuarios/(?P<pk>[0-9]+)$', views.usuarios_detail),
+
+    url(r'^api/compras$', views.compras_list),
+    url(r'^api/compras/(?P<pk>[0-9]+)$', views.compras_detail),
 
 ]
